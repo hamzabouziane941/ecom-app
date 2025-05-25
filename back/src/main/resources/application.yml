@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: ecommerce
+  datasource:
+    url: jdbc:h2:mem:testdb
+  h2:
+    console:
+      enabled: true
+      path: /h2
+security:
+  jwt:
+    secretKey: 3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b
+    expiration-time: 3600000

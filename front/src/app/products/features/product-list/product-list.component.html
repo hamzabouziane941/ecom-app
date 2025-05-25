@@ -1,0 +1,174 @@
+<h1 class="text-center">Liste des produits</h1>
+
+<div class="flex justify-center items-center ml-4 mb-4">
+  <p-button label="Créer produit" (onClick)="onCreate()" class="mr-2" />
+
+  <p-button
+    [label]="isCartVisible ? 'Ensemble des produits' : 'Vue Panier'"
+    (onClick)="onCart()"
+    severity="info"
+  />
+</div>
+
+<div class="max-w-4xl mx-auto mb-4 p-4 bg-white rounded shadow">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="col-span-1 md:col-span-2">
+      <span class="p-input-icon-left w-full">
+        <i class="pi pi-search"></i>
+        <input
+          pInputText
+          type="text"
+          [(ngModel)]="searchText"
+          (input)="onFilter()"
+          placeholder="Rechercher par nom, description ou code..."
+          class="w-full"
+        />
+      </span>
+    </div>
+    <div>
+      <p-dropdown
+        [options]="categories"
+        [(ngModel)]="selectedCategory"
+        (onChange)="onFilter()"
+        placeholder="Catégorie"
+        [showClear]="true"
+        class="w-full"
+      />
+    </div>
+    <div>
+      <p-dropdown
+        [options]="statuses"
+        [(ngModel)]="selectedStatus"
+        (onChange)="onFilter()"
+        placeholder="Statut"
+        [showClear]="true"
+        class="w-full"
+      />
+    </div>
+    <div>
+      <p-button
+        label="Effacer les filtres"
+        (onClick)="clearFilters()"
+        severity="secondary"
+        [disabled]="!searchText && !selectedCategory && !selectedStatus"
+      />
+    </div>
+  </div>
+
+</div>
+
+<p-dataView
+  #dv
+  [value]="products()"
+  [paginator]="true"
+  [rows]="rows"
+  [totalRecords]="totalRecords"
+  [first]="first"
+  (onPage)="onPageChange($event)"
+  [rowsPerPageOptions]="[5, 10, 20]"
+>
+  <ng-template pTemplate="list" let-products>
+    @for (product of paginatedProducts; track product) {
+    <p-card class="block mb-2">
+      <div class="flex justify-between items-start">
+        <div>
+          <span class="font-medium text-secondary text-sm">{{
+            product.category
+          }}</span>
+          <div class="text-lg font-medium text-900 mt-2">
+            {{ product.name }}
+          </div>
+          <div class="text-sm text-gray-600 mt-1">
+            {{ product.description }}
+          </div>
+          <div class="flex gap-4 mt-2">
+            <div class="text-sm">
+              <span class="font-medium">Code:</span> {{ product.code }}
+            </div>
+            <div class="text-sm">
+              <span class="font-medium">Rating:</span> {{ product.rating }}
+            </div>
+            <div class="text-sm">
+              <span class="font-medium">Prix:</span> {{ product.price }}
+            </div>
+            <div class="text-sm">
+              <span class="font-medium">Quantité:</span> {{ product.quantity }}
+            </div>
+            <div class="text-sm">
+              <span class="font-medium">Catégorie:</span> {{ product.category }}
+            </div>
+            <div class="text-sm">
+              <span class="font-medium">Quantité au panier:</span>
+              <p-badge
+                [value]="getProductCartQuantity(product)"
+                severity="contrast"
+                class="ml-2"
+              />
+            </div>
+            <div class="text-sm">
+              <span class="font-medium">Statut:</span>
+              <span
+                [class]="{
+                  'text-green-600': product.inventoryStatus === 'INSTOCK',
+                  'text-red-600': product.inventoryStatus === 'OUTOFSTOCK',
+                  'text-yellow-600': product.inventoryStatus === 'LOWSTOCK'
+                }"
+              >
+                {{ product.inventoryStatus }}
+              </span>
+            </div>
+          </div>
+          <div class="flex gap-4 mt-2 text-xs text-gray-500">
+            <div>
+              <span class="font-medium">Créé le:</span>
+              {{ product.createdAt | date : "dd/MM/yyyy HH:mm" }}
+            </div>
+            <div>
+              <span class="font-medium">Mis à jour le:</span>
+              {{ product.updatedAt | date : "dd/MM/yyyy HH:mm" }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template pTemplate="footer">
+        <div class="flex gap-3 mt-1">
+          <p-button
+            label="Modifier"
+            severity="secondary"
+            (onClick)="onUpdate(product)"
+          />
+          <p-button
+            label="Supprimer"
+            severity="danger"
+            (onClick)="onDelete(product)"
+          />
+          <p-button
+            label="Ajouter au panier"
+            severity="info"
+            (onClick)="onAddToCart(product)"
+          />
+          <p-button
+            label="Retirer du panier"
+            severity="warning"
+            (onClick)="onRemoveFromCart(product)"
+            [disabled]="getProductCartQuantity(product) === 0"
+          />
+        </div>
+      </ng-template>
+    </p-card>
+    }
+  </ng-template>
+</p-dataView>
+
+<p-dialog
+  [(visible)]="isDialogVisible"
+  [style]="{ width: '50vw' }"
+  header="Ajout/Edition produit"
+>
+  <app-product-form
+    [product]="editedProduct()"
+    (save)="onSave($event)"
+    (cancel)="onCancel()"
+  />
+</p-dialog>
